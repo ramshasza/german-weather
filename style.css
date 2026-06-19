@@ -418,3 +418,112 @@ tbody tr:hover td:last-child {
 .dwd-link:hover {
   text-decoration: underline;
 }
+
+/* --- Mobile / Responsive --- */
+@media (max-width: 640px) {
+  body {
+    padding: 0.75rem;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  #topbar {
+    margin-bottom: 1rem;
+  }
+
+  #topbar-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  #topbar-left,
+  #topbar-right {
+    flex: 1;
+  }
+
+  #topbar-controls button {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+  }
+
+  #last-fetched {
+    order: 3;
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
+
+  /* Auf Mobil scrollt die ganze Seite statt einer inneren Liste */
+  #accordion {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .panel-header {
+    padding: 0.9rem 0.8rem;
+  }
+
+  .panel-body {
+    padding: 0.5rem 0.6rem 0.9rem;
+    /* Tabelle horizontal scrollbar machen, falls zu breit */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    font-size: 0.82rem;
+  }
+
+  thead th {
+    padding: 0.45rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.4rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  .val {
+    min-width: 3rem;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.3rem;
+    margin-left: 0.25rem;
+  }
+
+  .toast {
+    top: 1rem;
+    width: max-content;
+    max-width: 90vw;
+    text-align: center;
+  }
+
+  #site-footer {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.6rem;
+  }
+}
+
+@media (max-width: 380px) {
+  body {
+    padding: 0.5rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+  }
+
+  table {
+    font-size: 0.76rem;
+  }
+
+  .val {
+    min-width: 2.6rem;
+  }
+}
