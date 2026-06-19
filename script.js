@@ -115,8 +115,21 @@ function buildTable(weatherData) {
 
   entries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
+  // Aktuelle Stunde in lokaler Zeit (Europe/Berlin) bestimmen
+  const currentHour = new Date().toLocaleString("de-DE", {
+    hour: "2-digit",
+    hour12: false,
+    timeZone: "Europe/Berlin",
+  });
+
   for (const entry of entries) {
     const tr = document.createElement("tr");
+    const entryHour = new Date(entry.timestamp).toLocaleString("de-DE", {
+      hour: "2-digit",
+      hour12: false,
+      timeZone: "Europe/Berlin",
+    });
+    if (entryHour === currentHour) tr.classList.add("current-hour");
     const tempRating = rateTemp(entry.temperature);
     const cloudRating = rateCloud(entry.cloud_cover);
     const humidityRating = rateHumidity(entry.relative_humidity);
