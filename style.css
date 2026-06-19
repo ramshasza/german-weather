@@ -13,6 +13,11 @@ body {
   margin: 0 auto;
   background: #f5f7fa;
   color: #1a1a1a;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 h1 {
@@ -27,6 +32,10 @@ h1 {
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #dde3ea;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f5f7fa;
 }
 
 #topbar-controls {
@@ -86,7 +95,8 @@ h1 {
 }
 
 #accordion {
-  max-height: 80vh;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -456,10 +466,9 @@ tbody tr:hover td:last-child {
     white-space: normal;
   }
 
-  /* Auf Mobil scrollt die ganze Seite statt einer inneren Liste */
+  /* Auf Mobil scrollt nur das Accordion intern, nicht die ganze Seite */
   #accordion {
-    max-height: none;
-    overflow-y: visible;
+    overflow-y: auto;
   }
 
   .panel-header {
