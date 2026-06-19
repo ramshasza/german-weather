@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wetter heute nach Bundesland</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header id="topbar">
+      <div id="topbar-controls">
+        <div id="topbar-left">
+          <button id="collapse-btn" type="button">
+            &#x25BC; Alle ausklappen
+          </button>
+        </div>
+        <span id="last-fetched"></span>
+        <div id="topbar-right">
+          <button id="refresh-btn" type="button">&#x21BB; Aktualisieren</button>
+        </div>
+      </div>
+      <h1 id="main-title">Wetter heute nach Bundesland</h1>
+    </header>
+    <div id="accordion"></div>
+    <footer id="site-footer">
+      Daten:
+      <a href="https://www.dwd.de" target="_blank" rel="noopener"
+        >DWD (Deutscher Wetterdienst)</a
+      >
+      · bereitgestellt über
+      <a href="https://brightsky.dev" target="_blank" rel="noopener"
+        >Bright Sky API</a
+      >
+    </footer>
+    <script src="bundeslaender.js"></script>
+    <script defer src="script.js"></script>
+  </body>
+</html>

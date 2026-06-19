@@ -1,0 +1,420 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  background: #f5f7fa;
+  color: #1a1a1a;
+}
+
+h1 {
+  font-size: 1.6rem;
+}
+
+#topbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #dde3ea;
+}
+
+#topbar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+#topbar-left,
+#topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#topbar-controls button {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+
+#collapse-btn {
+  background: #eef2f7;
+  color: #34495e;
+  border: 1px solid #c8d0db;
+}
+
+#collapse-btn:hover {
+  background: #dde4ee;
+}
+
+#refresh-btn {
+  background: #34495e;
+  color: #fff;
+  border: none;
+}
+
+#refresh-btn:hover {
+  background: #2c3e50;
+}
+
+#refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#last-fetched {
+  font-size: 0.8rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+#accordion {
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.panel {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.panel:last-child {
+  border-bottom: none;
+}
+
+.panel-header {
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  background: #fafafa;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.panel-header:hover {
+  background: #eef2f7;
+}
+
+.indicator {
+  display: inline-block;
+  width: 1.2em;
+  text-align: center;
+  font-size: 0.8em;
+}
+
+.panel-body {
+  display: none;
+  padding: 0.5rem 1rem 1rem;
+}
+
+.panel.open .panel-body {
+  display: block;
+}
+
+.loading {
+  padding: 1rem 0;
+  color: #666;
+  font-style: italic;
+}
+
+.error {
+  padding: 1rem 0;
+  color: #c0392b;
+  font-weight: 500;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+thead th {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  background: #34495e;
+  color: #fff;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+thead th:first-child {
+  border-radius: 4px 0 0 0;
+}
+
+thead th:last-child {
+  border-radius: 0 4px 0 0;
+}
+
+tbody td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #eee;
+}
+
+tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+tbody tr:hover {
+  background: #eef6ff;
+}
+
+tbody tr:hover td {
+  box-shadow:
+    inset 0 2px 0 0 #2e86c1,
+    inset 0 -2px 0 0 #2e86c1;
+}
+
+tbody tr:hover td:first-child {
+  box-shadow:
+    inset 0 2px 0 0 #2e86c1,
+    inset 0 -2px 0 0 #2e86c1,
+    inset 2px 0 0 0 #2e86c1;
+}
+
+tbody tr:hover td:last-child {
+  box-shadow:
+    inset 0 2px 0 0 #2e86c1,
+    inset 0 -2px 0 0 #2e86c1,
+    inset -2px 0 0 0 #2e86c1;
+}
+
+/* --- Toast --- */
+.toast {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-0.5rem);
+  background: #27ae60;
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  z-index: 999;
+}
+
+.toast.toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* --- Bewertungs-Badges --- */
+.val {
+  display: inline-block;
+  min-width: 4.2rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  margin-left: 0.3rem;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+/* Temperatur */
+.temp-freezing {
+  background: #d6eaf8;
+}
+.temp-freezing .badge {
+  background: #2471a3;
+  color: #fff;
+}
+.temp-cold {
+  background: #e8f6f3;
+}
+.temp-cold .badge {
+  background: #148f77;
+  color: #fff;
+}
+.temp-cool {
+  background: #eafaf1;
+}
+.temp-cool .badge {
+  background: #1e8449;
+  color: #fff;
+}
+.temp-nice {
+  background: #eafaf1;
+}
+.temp-nice .badge {
+  background: #27ae60;
+  color: #fff;
+}
+.temp-warm {
+  background: #fef9e7;
+}
+.temp-warm .badge {
+  background: #f39c12;
+  color: #fff;
+}
+.temp-hot {
+  background: #fdedec;
+}
+.temp-hot .badge {
+  background: #c0392b;
+  color: #fff;
+}
+
+/* Bewölkung */
+.cloud-clear {
+  background: #fef9e7;
+}
+.cloud-clear .badge {
+  background: #f1c40f;
+  color: #333;
+}
+.cloud-light {
+  background: #fdfefe;
+}
+.cloud-light .badge {
+  background: #bdc3c7;
+  color: #333;
+}
+.cloud-medium {
+  background: #f4f6f6;
+}
+.cloud-medium .badge {
+  background: #95a5a6;
+  color: #fff;
+}
+.cloud-heavy {
+  background: #ebedef;
+}
+.cloud-heavy .badge {
+  background: #7f8c8d;
+  color: #fff;
+}
+.cloud-overcast {
+  background: #e5e8e8;
+}
+.cloud-overcast .badge {
+  background: #566573;
+  color: #fff;
+}
+
+/* Regen */
+.rain-light {
+  background: #eaf2f8;
+}
+.rain-light .badge {
+  background: #5dade2;
+  color: #fff;
+}
+.rain-moderate {
+  background: #d6eaf8;
+}
+.rain-moderate .badge {
+  background: #2e86c1;
+  color: #fff;
+}
+.rain-heavy {
+  background: #fdebd0;
+}
+.rain-heavy .badge {
+  background: #e67e22;
+  color: #fff;
+}
+.rain-extreme {
+  background: #fdedec;
+}
+.rain-extreme .badge {
+  background: #c0392b;
+  color: #fff;
+}
+
+/* Humidity badges */
+.humidity-low {
+  background: #fef9e7;
+}
+.humidity-low .badge {
+  background: #d4ac0d;
+  color: #fff;
+}
+.humidity-ok {
+  background: #eafaf1;
+}
+.humidity-ok .badge {
+  background: #27ae60;
+  color: #fff;
+}
+.humidity-high {
+  background: #ebf5fb;
+}
+.humidity-high .badge {
+  background: #2e86c1;
+  color: #fff;
+}
+.humidity-vhigh {
+  background: #f4ecf7;
+}
+.humidity-vhigh .badge {
+  background: #8e44ad;
+  color: #fff;
+}
+
+/* --- Footer (sticky) --- */
+#site-footer {
+  position: sticky;
+  bottom: 0;
+  background: #2c3e50;
+  color: #ccc;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  margin-top: 1.5rem;
+  border-radius: 4px;
+}
+
+#site-footer a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+#site-footer a:hover {
+  color: #5dade2;
+}
+
+/* --- DWD Link in Panel --- */
+.dwd-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #2e86c1;
+  text-decoration: none;
+}
+
+.dwd-link:hover {
+  text-decoration: underline;
+}
