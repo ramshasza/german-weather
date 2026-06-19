@@ -112,12 +112,18 @@ h1 {
 }
 
 .panel-header {
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
   cursor: pointer;
   font-weight: 600;
   background: #fafafa;
   user-select: none;
   transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 6;
 }
 
 .panel-header:hover {
@@ -129,6 +135,14 @@ h1 {
   width: 1.2em;
   text-align: center;
   font-size: 0.8em;
+}
+
+.wappen {
+  height: 1.5em;
+  width: 1.5em;
+  object-fit: contain;
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .panel-body {
@@ -165,7 +179,7 @@ thead th {
   color: #fff;
   font-weight: 600;
   position: sticky;
-  top: 0;
+  top: calc(var(--ph-h, 3.2rem) - 1px);
   z-index: 5;
 }
 
@@ -497,14 +511,13 @@ tbody tr:hover td:last-child {
   }
 
   .panel-header {
-    padding: 0.9rem 0.8rem;
+    padding: 0.875rem 0.75rem;
   }
 
   .panel-body {
     padding: 0.5rem 0.6rem 0.9rem;
-    /* Tabelle horizontal scrollbar machen, falls zu breit */
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    /* kein eigener Scroll-Container, sonst klebt der thead nicht */
+    overflow-x: visible;
   }
 
   table {
@@ -518,17 +531,20 @@ tbody tr:hover td:last-child {
 
   tbody td {
     padding: 0.4rem 0.4rem;
-    white-space: nowrap;
   }
 
-  .val {
-    min-width: 3rem;
+  /* Wert und Badge untereinander, damit die 5 Spalten passen */
+  tbody .val {
+    display: block;
+    min-width: 0;
+    text-align: left;
   }
 
   .badge {
     font-size: 0.65rem;
     padding: 0.1rem 0.3rem;
-    margin-left: 0.25rem;
+    margin-left: 0;
+    margin-top: 0.15rem;
   }
 
   .toast {

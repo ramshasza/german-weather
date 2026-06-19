@@ -170,7 +170,7 @@ function renderPanels() {
 
     const header = document.createElement("div");
     header.className = "panel-header";
-    header.innerHTML = `<span class="indicator">▶</span> ${land.name}`;
+    header.innerHTML = `<span class="indicator">▶</span><span class="land-name">${land.name}</span><img class="wappen" src="${land.wappen}" alt="Wappen ${land.name}" loading="lazy" onerror="this.style.display='none'">`;
 
     const body = document.createElement("div");
     body.className = "panel-body";
@@ -311,3 +311,17 @@ if (collapseBtn) {
 
 renderPanels();
 updateLastFetched();
+
+// Sticky-Versatz des Tabellenkopfs an die echte Panel-Header-Höhe koppeln,
+// damit zwischen beiden Sticky-Elementen kein 1px-Spalt flackert.
+function setHeaderOffset() {
+  const header = document.querySelector(".panel-header");
+  if (header) {
+    document.documentElement.style.setProperty(
+      "--ph-h",
+      `${header.offsetHeight}px`,
+    );
+  }
+}
+setHeaderOffset();
+window.addEventListener("resize", setHeaderOffset);

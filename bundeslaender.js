@@ -2,6 +2,7 @@
 const bundeslaender = [
   {
     name: "Baden-Württemberg",
+    wappen: "wappen/baden-wuerttemberg.svg",
     lat: 48.7758,
     lon: 9.1829,
     dwdUrl:
@@ -9,6 +10,7 @@ const bundeslaender = [
   },
   {
     name: "Bayern",
+    wappen: "wappen/bayern.svg",
     lat: 48.1374,
     lon: 11.5755,
     dwdUrl:
@@ -16,6 +18,7 @@ const bundeslaender = [
   },
   {
     name: "Berlin",
+    wappen: "wappen/berlin.svg",
     lat: 52.52,
     lon: 13.405,
     dwdUrl:
@@ -23,6 +26,7 @@ const bundeslaender = [
   },
   {
     name: "Brandenburg",
+    wappen: "wappen/brandenburg.svg",
     lat: 52.3989,
     lon: 13.0657,
     dwdUrl:
@@ -30,6 +34,7 @@ const bundeslaender = [
   },
   {
     name: "Bremen",
+    wappen: "wappen/bremen.svg",
     lat: 53.0793,
     lon: 8.8017,
     dwdUrl:
@@ -37,6 +42,7 @@ const bundeslaender = [
   },
   {
     name: "Hamburg",
+    wappen: "wappen/hamburg.svg",
     lat: 53.5511,
     lon: 9.9937,
     dwdUrl:
@@ -44,6 +50,7 @@ const bundeslaender = [
   },
   {
     name: "Hessen",
+    wappen: "wappen/hessen.svg",
     lat: 50.0826,
     lon: 8.2493,
     dwdUrl:
@@ -51,6 +58,7 @@ const bundeslaender = [
   },
   {
     name: "Mecklenburg-Vorpommern",
+    wappen: "wappen/mecklenburg-vorpommern.svg",
     lat: 53.6355,
     lon: 11.4012,
     dwdUrl:
@@ -58,6 +66,7 @@ const bundeslaender = [
   },
   {
     name: "Niedersachsen",
+    wappen: "wappen/niedersachsen.svg",
     lat: 52.3759,
     lon: 9.732,
     dwdUrl:
@@ -65,6 +74,7 @@ const bundeslaender = [
   },
   {
     name: "Nordrhein-Westfalen",
+    wappen: "wappen/nordrhein-westfalen.svg",
     lat: 51.2277,
     lon: 6.7735,
     dwdUrl:
@@ -72,6 +82,7 @@ const bundeslaender = [
   },
   {
     name: "Rheinland-Pfalz",
+    wappen: "wappen/rheinland-pfalz.svg",
     lat: 49.9929,
     lon: 8.2473,
     dwdUrl:
@@ -79,6 +90,7 @@ const bundeslaender = [
   },
   {
     name: "Saarland",
+    wappen: "wappen/saarland.svg",
     lat: 49.2401,
     lon: 6.9969,
     dwdUrl:
@@ -86,6 +98,7 @@ const bundeslaender = [
   },
   {
     name: "Sachsen",
+    wappen: "wappen/sachsen.svg",
     lat: 51.0504,
     lon: 13.7373,
     dwdUrl:
@@ -93,6 +106,7 @@ const bundeslaender = [
   },
   {
     name: "Sachsen-Anhalt",
+    wappen: "wappen/sachsen-anhalt.svg",
     lat: 52.1205,
     lon: 11.6276,
     dwdUrl:
@@ -100,6 +114,7 @@ const bundeslaender = [
   },
   {
     name: "Schleswig-Holstein",
+    wappen: "wappen/schleswig-holstein.svg",
     lat: 54.3233,
     lon: 10.1228,
     dwdUrl:
@@ -107,6 +122,7 @@ const bundeslaender = [
   },
   {
     name: "Thüringen",
+    wappen: "wappen/thueringen.svg",
     lat: 50.9848,
     lon: 11.0299,
     dwdUrl:
