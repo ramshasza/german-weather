@@ -1,15 +1,21 @@
 const cache = new Map();
 
-function getToday() {
+function getDateFor(day) {
   const now = new Date();
+  if (day === "tomorrow") now.setDate(now.getDate() + 1);
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${d}`;
 }
 
-async function fetchWeather(lat, lon) {
-  const date = getToday();
+function getToday() {
+  return getDateFor("today");
+}
+
+let activeDay = "today";
+
+async function fetchWeather(lat, lon, date) {
   const url = `https://api.brightsky.dev/weather?lat=${lat}&lon=${lon}&date=${date}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -111,7 +117,7 @@ function rateCondition(val) {
   return map[val] ?? { label: val, cls: "" };
 }
 
-function buildTable(weatherData, alerts = []) {
+function buildTable(weatherData, alerts = [], targetDate = getToday()) {
   const table = document.createElement("table");
   table.innerHTML = `
         <thead>
@@ -128,13 +134,12 @@ function buildTable(weatherData, alerts = []) {
     `;
   const tbody = document.createElement("tbody");
 
-  // Filter to today's entries in Europe/Berlin and sort by hour
-  const today = getToday();
+  // Filter to target day's entries in Europe/Berlin and sort by hour
   const entries = weatherData.filter((entry) => {
     const localDate = new Date(entry.timestamp).toLocaleDateString("sv-SE", {
       timeZone: "Europe/Berlin",
     });
-    return localDate === today;
+    return localDate === targetDate;
   });
 
   entries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -153,7 +158,8 @@ function buildTable(weatherData, alerts = []) {
       hour12: false,
       timeZone: "Europe/Berlin",
     });
-    if (entryHour === currentHour) tr.classList.add("current-hour");
+    if (targetDate === getToday() && entryHour === currentHour)
+      tr.classList.add("current-hour");
     const tempRating = rateTemp(entry.temperature);
     const cloudRating = rateCloud(entry.cloud_cover);
     const humidityRating = rateHumidity(entry.relative_humidity);
@@ -202,7 +208,41 @@ function buildTable(weatherData, alerts = []) {
   }
 
   table.appendChild(tbody);
-  return table;
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "table-wrap";
+  tableWrap.appendChild(table);
+  return tableWrap;
+}
+
+async function loadPanelContent(land, body) {
+  const cacheKey = `${land.name}:${activeDay}`;
+  if (cache.has(cacheKey)) {
+    const { weather, alerts } = cache.get(cacheKey);
+    body.innerHTML = "";
+    body.appendChild(buildTable(weather, alerts, getDateFor(activeDay)));
+    body.insertAdjacentHTML(
+      "beforeend",
+      `<a class="dwd-link" href="${land.dwdUrl}" target="_blank" rel="noopener">🔗 DWD-Vorhersage für ${land.name}</a>`,
+    );
+    return;
+  }
+  body.innerHTML = '<p class="loading">Lade…</p>';
+  try {
+    const date = getDateFor(activeDay);
+    const [data, alerts] = await Promise.all([
+      fetchWeather(land.lat, land.lon, date),
+      fetchAlerts(land.lat, land.lon),
+    ]);
+    cache.set(cacheKey, { weather: data, alerts });
+    body.innerHTML = "";
+    body.appendChild(buildTable(data, alerts, date));
+    body.insertAdjacentHTML(
+      "beforeend",
+      `<a class="dwd-link" href="${land.dwdUrl}" target="_blank" rel="noopener">🔗 DWD-Vorhersage für ${land.name}</a>`,
+    );
+  } catch (e) {
+    body.innerHTML = '<p class="error">Daten konnten nicht geladen werden.</p>';
+  }
 }
 
 function renderPanels() {
@@ -222,34 +262,7 @@ function renderPanels() {
     header.addEventListener("click", async () => {
       const isOpen = panel.classList.toggle("open");
       header.querySelector(".indicator").textContent = isOpen ? "▼" : "▶";
-
-      if (isOpen && !cache.has(land.name)) {
-        body.innerHTML = '<p class="loading">Lade…</p>';
-        try {
-          const [data, alerts] = await Promise.all([
-            fetchWeather(land.lat, land.lon),
-            fetchAlerts(land.lat, land.lon),
-          ]);
-          cache.set(land.name, { weather: data, alerts });
-          body.innerHTML = "";
-          body.appendChild(buildTable(data, alerts));
-          body.insertAdjacentHTML(
-            "beforeend",
-            `<a class="dwd-link" href="${land.dwdUrl}" target="_blank" rel="noopener">🔗 DWD-Vorhersage für ${land.name}</a>`,
-          );
-        } catch (e) {
-          body.innerHTML =
-            '<p class="error">Daten konnten nicht geladen werden.</p>';
-        }
-      } else if (isOpen && cache.has(land.name)) {
-        const { weather, alerts } = cache.get(land.name);
-        body.innerHTML = "";
-        body.appendChild(buildTable(weather, alerts));
-        body.insertAdjacentHTML(
-          "beforeend",
-          `<a class="dwd-link" href="${land.dwdUrl}" target="_blank" rel="noopener">🔗 DWD-Vorhersage für ${land.name}</a>`,
-        );
-      }
+      if (isOpen) await loadPanelContent(land, body);
     });
 
     panel.appendChild(header);
@@ -259,15 +272,21 @@ function renderPanels() {
 }
 
 // Datum in Überschrift setzen
-const titleDate = new Date().toLocaleDateString("de-DE", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  timeZone: "Europe/Berlin",
-});
-const titleEl = document.getElementById("main-title");
-if (titleEl)
-  titleEl.textContent = `Wetter heute (${titleDate}) nach Bundesland`;
+function updateTitle() {
+  const dateStr = getDateFor(activeDay);
+  const displayDate = new Date(dateStr + "T12:00:00").toLocaleDateString(
+    "de-DE",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    },
+  );
+  const dayLabel = activeDay === "today" ? "heute" : "morgen";
+  const titleEl = document.getElementById("main-title");
+  if (titleEl)
+    titleEl.textContent = `Wetter ${dayLabel} (${displayDate}) nach Bundesland`;
+}
 
 function showToast(message) {
   const toast = document.createElement("div");
@@ -324,6 +343,7 @@ async function refreshAll() {
     if (idx >= 0) panels[idx]?.querySelector(".panel-header").click();
   }
 
+  updateTitle();
   updateLastFetched();
   showToast("✓ Erfolgreich aktualisiert");
   if (btn) btn.disabled = false;
@@ -358,7 +378,28 @@ if (collapseBtn) {
 }
 
 renderPanels();
+updateTitle();
 updateLastFetched();
+
+// Tab switching
+document.querySelectorAll(".day-tab").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    if (btn.dataset.day === activeDay) return;
+    activeDay = btn.dataset.day;
+    document
+      .querySelectorAll(".day-tab")
+      .forEach((b) =>
+        b.classList.toggle("active", b.dataset.day === activeDay),
+      );
+    updateTitle();
+    for (const panel of document.querySelectorAll(".panel.open")) {
+      const landName = panel.querySelector(".land-name").textContent;
+      const land = bundeslaender.find((l) => l.name === landName);
+      if (land)
+        await loadPanelContent(land, panel.querySelector(".panel-body"));
+    }
+  });
+});
 
 // Sticky-Versatz des Tabellenkopfs an die echte Panel-Header-Höhe koppeln,
 // damit zwischen beiden Sticky-Elementen kein 1px-Spalt flackert.

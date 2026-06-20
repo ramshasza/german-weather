@@ -94,6 +94,35 @@ h1 {
   white-space: nowrap;
 }
 
+#day-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.day-tab {
+  padding: 0.3rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #c8d0db;
+  border-bottom: none;
+  background: #eef2f7;
+  color: #34495e;
+  transition: background 0.15s;
+}
+
+.day-tab:hover {
+  background: #dde4ee;
+}
+
+.day-tab.active {
+  background: #34495e;
+  color: #fff;
+  border-color: #34495e;
+}
+
 #accordion {
   flex: 1 1 auto;
   min-height: 0;
@@ -601,6 +630,17 @@ tbody tr:hover td:last-child {
     padding: 0.5rem 0.6rem 0.9rem;
     /* kein eigener Scroll-Container, sonst klebt der thead nicht */
     overflow-x: visible;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrap thead th {
+    /* sticky innerhalb des horizontalen Scroll-Containers */
+    top: 0;
+    z-index: 5;
   }
 
   table {
