@@ -2,7 +2,7 @@
 
 ## Ziel
 
-Eine einzelne, abhängigkeitsfreie Web-App (kein Framework, kein Build-Step), die für jedes der 16 deutschen Bundesländer eine stündliche 24h-Vorschau als Tabelle anzeigt: **Temperatur**, **Bewölkung**, **Luftfeuchte** und **Regen (Niederschlag inkl. Wahrscheinlichkeit)**. Jeder Messwert wird zusätzlich mit einem farbigen Bewertungs-Badge (z.B. "Kalt", "Bewölkt", "Schwül") eingeordnet.
+Eine einzelne, abhängigkeitsfreie Web-App (kein Framework, kein Build-Step), die für jedes der 16 deutschen Bundesländer eine stündliche 24h-Vorschau als Tabelle anzeigt: **Temperatur**, **Bewölkung**, **Luftfeuchte**, **Regen (Niederschlag inkl. Wahrscheinlichkeit)**, **Zustand** (Wetterbedingungs-Icon) und **aktive DWD-Warnungen**. Jeder Messwert wird zusätzlich mit einem farbigen Bewertungs-Badge (z.B. "Kalt", "Bewölkt", "Schwül") eingeordnet.
 
 ## Tech-Constraints
 
@@ -39,12 +39,28 @@ Eine einzelne, abhängigkeitsfreie Web-App (kein Framework, kein Build-Step), di
   - `relative_humidity` (Prozent, 0–100, kann `null` sein)
   - `precipitation` (mm, Zahl, kann `null` sein)
   - `precipitation_probability` (Prozent, nur in Forecasts, kann `null` sein)
+  - `condition` (String: `dry` | `fog` | `rain` | `sleet` | `snow` | `hail` | `thunderstorm` | `null`) — von Bright Sky berechnete Schätzung, nicht direkt gemessen
 - Zeitstempel sind UTC — für die Anzeige in lokale Zeit (Europe/Berlin) umrechnen. Es werden nur die Einträge angezeigt, die in lokaler Zeit auf das heutige Datum fallen.
 - Fehlende Werte (`null`) in der Tabelle als `–` anzeigen, nicht als `null`/`undefined`.
 
+### Alerts-Endpunkt
+
+- Basis-URL: `https://api.brightsky.dev/alerts`
+- Request-Beispiel:
+  ```
+  GET https://api.brightsky.dev/alerts?lat=52.52&lon=13.405
+  ```
+- Antwort enthält ein Array `alerts`, jeder Eintrag hat u.a.:
+  - `onset` / `expires` (ISO-Strings, UTC) — Gültigkeitszeitraum
+  - `event_de` (z.B. "EXTREME HITZE", "GEWITTER")
+  - `severity` (`minor` | `moderate` | `severe` | `extreme`)
+  - `headline_de` — vollständiger Warnungstext
+- Pro Stundeneintrag werden alle Warnungen angezeigt, für die gilt: `onset ≤ timestamp < expires`.
+- Bei Fetch-Fehler des Alerts-Endpunkts wird `[]` zurückgegeben (kein Crash).
+
 ### Weitere verfügbare Felder (aktuell nicht genutzt)
 
-Bright Sky liefert pro Stunde außerdem: `wind_speed`, `wind_gust_speed`, `wind_direction`, `pressure_msl`, `visibility`, `sunshine`, `solar`, `dew_point`, `condition`, `icon`. Diese können bei Bedarf als zusätzliche Spalten ergänzt werden.
+Bright Sky liefert pro Stunde außerdem: `wind_speed`, `wind_gust_speed`, `wind_direction`, `pressure_msl`, `visibility`, `sunshine`, `solar`, `dew_point`, `icon`. Diese können bei Bedarf als zusätzliche Spalten ergänzt werden.
 
 ## Bundesländer & Koordinaten
 
@@ -90,32 +106,36 @@ DWD-URLs nach dem Muster `https://www.dwd.de/DE/wetter/vorhersage_aktuell/<regio
 
 ## Tabellenformat (pro Bundesland-Panel)
 
-5 Spalten, eine Zeile je Stunde des heutigen Tages (lokale Zeit, aufsteigend sortiert):
+7 Spalten, eine Zeile je Stunde des heutigen Tages (lokale Zeit, aufsteigend sortiert):
 
-| Uhrzeit | Temperatur     | Bewölkung    | Feuchte       | Regen                     |
-| ------- | -------------- | ------------ | ------------- | ------------------------- |
-| 00:00   | 14.2 °C `Kühl` | 80 % `Stark` | 72 % `Feucht` | 0.0 mm · 10 % `–`         |
-| 01:00   | 13.8 °C `Kühl` | 75 % `Stark` | 75 % `Feucht` | 0.3 mm · 46 % `Leicht 💧` |
+| Uhrzeit | Temperatur     | Bewölkung    | Feuchte       | Regen                     | Zustand    | Warnung ⚠️     |
+| ------- | -------------- | ------------ | ------------- | ------------------------- | ---------- | -------------- |
+| 00:00   | 14.2 °C `Kühl` | 80 % `Stark` | 72 % `Feucht` | 0.0 mm · 10 % `–`         | `Trocken`  | `–`            |
+| 01:00   | 13.8 °C `Kühl` | 75 % `Stark` | 75 % `Feucht` | 0.3 mm · 46 % `Leicht 💧` | `Regen 🌧️` | `STARKE HITZE` |
 
 - **Temperatur**: `°C`, eine Nachkommastelle. Badge: Eisig / Kalt / Kühl / Angenehm / Warm / Heiß.
 - **Bewölkung**: `%`, ganze Zahl. Badge: Klar / Leicht / Bewölkt / Stark / Bedeckt.
 - **Feuchte**: `relative_humidity` in `%`, ganze Zahl. Badge: Trocken / Angenehm / Feucht / Schwül.
 - **Regen**: `precipitation` in `mm` (eine Nachkommastelle) kombiniert mit `precipitation_probability` in `%` (`mm · %`). Badge: – / Leicht / Mäßig / Stark / Sehr stark.
+- **Zustand**: `condition`-Feld aus dem Weather-Endpunkt. Badge: Trocken / Nebel 🌫️ / Regen 🌧️ / Schneeregen 🌨️ / Schnee ❄️ / Hagel 🌨️ / Gewitter ⛈️. `null` → `–`.
+- **Warnung ⚠️**: Aktive DWD-Warnungen aus dem Alerts-Endpunkt, gefiltert auf den jeweiligen Stundenslot. Jede Warnung wird als farbiges Badge mit `event_de` angezeigt; Hover zeigt `headline_de`. Farben nach `severity`: minor=orange, moderate=dunkelorange, severe=rot, extreme=lila. Keine aktive Warnung → `–`.
 - Jeder Wert sitzt in einer farblich passend hinterlegten Zelle (Badge-Farbklasse).
 
 ## Styling
 
 - Klare Lesbarkeit, abgehobener Tabellenkopf, Panels mit Rahmen/Trennlinie.
-- Farbige Badge-Klassen je Kategorie (temp-_, cloud-_, humidity-_, rain-_).
+- Farbige Badge-Klassen je Kategorie (temp-_, cloud-_, humidity-_, rain-_, cond-_, alert-_).
 - Sticky Topbar und sticky Footer.
 - Toast mit Ein-/Ausblend-Animation, oben zentriert.
+- Desktop-Breite: `max-width: 1400px`.
 
 ## Akzeptanzkriterien
 
 - [ ] App läuft als reine `index.html` im Browser ohne Server/Build (Doppelklick).
 - [ ] Alle 16 Bundesländer als scrollbare, einzeln auf-/zuklappbare Einträge sichtbar.
-- [ ] Jedes aufgeklappte Bundesland zeigt eine Tabelle mit einer Zeile je Stunde des heutigen Tages (lokale Zeit) und den Spalten Uhrzeit/Temperatur/Bewölkung/Feuchte/Regen, jeweils mit Bewertungs-Badge.
-- [ ] Daten kommen live von `api.brightsky.dev`, kein Hardcoding von Wetterwerten.
+- [ ] Jedes aufgeklappte Bundesland zeigt eine Tabelle mit einer Zeile je Stunde des heutigen Tages (lokale Zeit) und den Spalten Uhrzeit/Temperatur/Bewölkung/Feuchte/Regen/Zustand/Warnung, jeweils mit Bewertungs-Badge.
+- [ ] Wetterdaten kommen live von `api.brightsky.dev/weather`, DWD-Warnungen von `api.brightsky.dev/alerts`, kein Hardcoding von Wetterwerten.
+- [ ] Weather- und Alerts-Fetch laufen parallel (`Promise.all`); ein Fehler beim Alerts-Fetch bricht das Panel nicht ab.
 - [ ] Erneutes Öffnen eines bereits geladenen Bundeslandes verursacht keinen erneuten Netzwerk-Request.
 - [ ] „Aktualisieren" lädt geöffnete Panels neu; „Alle aus-/einklappen" toggelt alle Panels.
 - [ ] Stammdaten (Koordinaten + DWD-URLs) liegen ausschließlich in `bundeslaender.js` und werden von App und Test gemeinsam genutzt.

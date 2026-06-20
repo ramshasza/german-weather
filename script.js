@@ -17,6 +17,14 @@ async function fetchWeather(lat, lon) {
   return data.weather;
 }
 
+async function fetchAlerts(lat, lon) {
+  const url = `https://api.brightsky.dev/alerts?lat=${lat}&lon=${lon}`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.alerts ?? [];
+}
+
 function formatTime(isoString) {
   const date = new Date(isoString);
   return date.toLocaleTimeString("de-DE", {
@@ -89,7 +97,21 @@ function rateHumidity(val) {
   return { label: "Schwül", cls: "humidity-vhigh" };
 }
 
-function buildTable(weatherData) {
+function rateCondition(val) {
+  if (val == null) return { label: "–", cls: "" };
+  const map = {
+    dry: { label: "Trocken", cls: "cond-dry" },
+    fog: { label: "Nebel 🌫️", cls: "cond-fog" },
+    rain: { label: "Regen 🌧️", cls: "cond-rain" },
+    sleet: { label: "Schneeregen 🌨️", cls: "cond-sleet" },
+    snow: { label: "Schnee ❄️", cls: "cond-snow" },
+    hail: { label: "Hagel 🌨️", cls: "cond-hail" },
+    thunderstorm: { label: "Gewitter ⛈️", cls: "cond-thunderstorm" },
+  };
+  return map[val] ?? { label: val, cls: "" };
+}
+
+function buildTable(weatherData, alerts = []) {
   const table = document.createElement("table");
   table.innerHTML = `
         <thead>
@@ -99,6 +121,8 @@ function buildTable(weatherData) {
                 <th>Bewölkung</th>
                 <th>Feuchte</th>
                 <th>Regen</th>
+                <th>Zustand</th>
+                <th>Warnung ⚠️</th>
             </tr>
         </thead>
     `;
@@ -134,6 +158,22 @@ function buildTable(weatherData) {
     const cloudRating = rateCloud(entry.cloud_cover);
     const humidityRating = rateHumidity(entry.relative_humidity);
     const rainRating = rateRain(entry.precipitation);
+    const condRating = rateCondition(entry.condition);
+    const ts = new Date(entry.timestamp).getTime();
+    const activeAlerts = alerts.filter((a) => {
+      const onset = new Date(a.onset).getTime();
+      const expires = a.expires ? new Date(a.expires).getTime() : Infinity;
+      return onset <= ts && ts < expires;
+    });
+    const alertHtml =
+      activeAlerts.length === 0
+        ? '<span class="badge">–</span>'
+        : activeAlerts
+            .map(
+              (a) =>
+                `<span class="badge alert-${a.severity}" title="${a.headline_de}">${a.event_de}</span>`,
+            )
+            .join(" ");
 
     tr.innerHTML = `
       <td>${formatTime(entry.timestamp)}</td>
@@ -153,6 +193,10 @@ function buildTable(weatherData) {
         <span class="val">${formatRain(entry.precipitation, entry.precipitation_probability)}</span>
         <span class="badge">${rainRating.label}</span>
       </td>
+      <td class="${condRating.cls}">
+        <span class="badge">${condRating.label}</span>
+      </td>
+      <td class="alert-cell">${alertHtml}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -182,10 +226,13 @@ function renderPanels() {
       if (isOpen && !cache.has(land.name)) {
         body.innerHTML = '<p class="loading">Lade…</p>';
         try {
-          const data = await fetchWeather(land.lat, land.lon);
-          cache.set(land.name, data);
+          const [data, alerts] = await Promise.all([
+            fetchWeather(land.lat, land.lon),
+            fetchAlerts(land.lat, land.lon),
+          ]);
+          cache.set(land.name, { weather: data, alerts });
           body.innerHTML = "";
-          body.appendChild(buildTable(data));
+          body.appendChild(buildTable(data, alerts));
           body.insertAdjacentHTML(
             "beforeend",
             `<a class="dwd-link" href="${land.dwdUrl}" target="_blank" rel="noopener">🔗 DWD-Vorhersage für ${land.name}</a>`,
@@ -195,8 +242,9 @@ function renderPanels() {
             '<p class="error">Daten konnten nicht geladen werden.</p>';
         }
       } else if (isOpen && cache.has(land.name)) {
+        const { weather, alerts } = cache.get(land.name);
         body.innerHTML = "";
-        body.appendChild(buildTable(cache.get(land.name)));
+        body.appendChild(buildTable(weather, alerts));
         body.insertAdjacentHTML(
           "beforeend",
           `<a class="dwd-link" href="${land.dwdUrl}" target="_blank" rel="noopener">🔗 DWD-Vorhersage für ${land.name}</a>`,
